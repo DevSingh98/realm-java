@@ -4,6 +4,8 @@
 > - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
 >
 
+> This repo will strip out all of the deprecated features and keep it open-source
+
 <picture>
     <source srcset="./media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
     <img src="./media/logo.svg" alt="realm by MongoDB">
