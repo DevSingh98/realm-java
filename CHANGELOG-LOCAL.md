@@ -2,11 +2,11 @@
 
 ## Version 11.0.0-local (2024-12-19)
 
-### 🎯 **Local-Only Transformation**
+### **Local-Only Transformation**
 
 Transformed Realm Java into a **local-only database library** by removing all deprecated sync functionality.
 
-### ✅ **What's Preserved**
+### **What's Preserved**
 - **Local Database**: Complete CRUD operations
 - **RealmObject & RealmModel**: Object modeling
 - **Queries**: RealmQuery with filtering and sorting
@@ -19,7 +19,7 @@ Transformed Realm Java into a **local-only database library** by removing all de
 - **Kotlin Coroutines**: Async/await support
 - **JSON**: Import/export functionality
 
-### ❌ **What's Removed**
+### **What's Removed**
 - **Atlas Device Sync**: Real-time synchronization
 - **MongoDB Integration**: App Services, Functions
 - **Authentication**: User management, OAuth
@@ -27,20 +27,20 @@ Transformed Realm Java into a **local-only database library** by removing all de
 - **Sync Configuration**: SyncConfiguration class
 - **Client Reset**: Sync conflict resolution
 
-### 📦 **New Coordinates**
+### **New Coordinates**
 ```gradle
 implementation 'io.realm.local:realm-android-library-local:11.0.0-local'
 kapt 'io.realm:realm-annotations-processor:11.0.0-local'
 ```
 
-### 🚀 **Benefits**
+### **Benefits**
 - **Smaller APK**: ~2MB reduction
 - **Faster Builds**: No sync native compilation
 - **Privacy-First**: All data stays local
 - **Offline-First**: No network dependencies
 - **Simplified**: Fewer dependencies
 
-### 🔧 **Migration**
+### **Migration**
 See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for step-by-step migration instructions.
 
 ---
