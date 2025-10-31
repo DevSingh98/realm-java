@@ -91,18 +91,8 @@ android {
     }
 
     sourceSets {
-        testObjectServer {
-            java.srcDirs += ['src/testObjectServer/kotlin']
-        }
         androidTest {
             java.srcDirs += ['src/androidTest/kotlin', 'src/testUtils/java', 'src/testUtils/kotlin']
-        }
-        androidTestObjectServer {
-            java.srcDirs += [ 'src/syncIntegrationTest/kotlin',
-                              'src/androidTestObjectServer/kotlin',
-                              'src/syncTestUtils/java',
-                              'src/syncTestUtils/kotlin' ]
-            assets.srcDirs += ['src/syncIntegrationTest/assets/']
         }
     }
 
@@ -134,51 +124,27 @@ android {
 
     flavorDimensions 'api'
 
-    productFlavors {
-        base {
-            dimension 'api'
-            externalNativeBuild {
-                cmake {
-                    arguments "-DREALM_FLAVOR=base"
-                }
-            }
-            consumerProguardFiles 'proguard-rules-consumer-common.pro', 'proguard-rules-consumer-base.pro'
-            proguardFiles 'proguard-rules-build-common.pro'
-        }
-        objectServer {
-            dimension 'api'
-            externalNativeBuild {
-                cmake {
-                    arguments "-DREALM_FLAVOR=objectServer"
-                }
-            }
-            consumerProguardFiles 'proguard-rules-consumer-common.pro', 'proguard-rules-consumer-objectServer.pro'
-            proguardFiles 'proguard-rules-build-common.pro', 'proguard-rules-build-objectServer.pro'
+    // Simplified for local-only build
+    defaultConfig {
+        consumerProguardFiles 'proguard-rules-consumer-common.pro', 'proguard-rules-consumer-base.pro'
+        proguardFiles 'proguard-rules-build-common.pro'
+    }
+    
+    externalNativeBuild {
+        cmake {
+            arguments "-DREALM_FLAVOR=base"
         }
     }
 }
 
 io.realm.transformer.RealmTransformerKt.registerRealmTransformerTask(project)
-// TODO RealmBuildTransformer only supports stripping symbols from Jars so must be applied
-//  after the accessor transformer (that combines all inputs into one common Jar)
-io.realm.buildtransformer.RealmBuildTransformer.@Companion.register(
-        project,
-        "base",
-        "io.realm.internal.annotations.ObjectServer",
-)
 
 project.afterEvaluate {
     tasks.withType(JavaCompile) {
         options.compilerArgs << '-Werror'
     }
 
-    android.productFlavors.all { flavor ->
-        tasks.all { task ->
-            if (task.name == "publish${flavor.name.capitalize()}PublicationPublicationToMavenLocal") {
-                task.dependsOn "assemble${flavor.name.capitalize()}"
-            }
-        }
-    }
+    // Simplified for single flavor build
 }
 
 // enable @ParametersAreNonnullByDefault annotation. See https://blog.jetbrains.com/kotlin/2017/09/kotlin-1-1-50-is-out/
@@ -219,7 +185,6 @@ dependencies {
     androidTestImplementation "androidx.multidex:multidex:2.0.1"
 
     kapt project(':realm-annotations-processor') // See https://github.com/realm/realm-java/issues/5799
-    objectServerImplementation 'com.squareup.okhttp3:okhttp:3.12.0' // Going above this requires minSDK 21
     kaptAndroidTest project(':realm-annotations-processor')
     androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     androidTestImplementation "io.reactivex.rxjava2:rxjava:${properties.getProperty('RXJAVA_DEPENDENCY')}"
@@ -239,15 +204,13 @@ dependencies {
 }
 
 task sourcesJar(type: Jar) {
-    from android.sourceSets.objectServer.java.srcDirs
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
 }
 
 task javadoc(type: Javadoc) {
     failOnError false
-    dependsOn("compileObjectServerReleaseJavaWithJavac")
-    source android.sourceSets.objectServer.java.srcDirs
+    dependsOn("compileReleaseJavaWithJavac")
     source android.sourceSets.main.java.srcDirs
     source "../../realm-annotations/src/main/java"
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
@@ -307,7 +270,7 @@ task spotbugsMain(type: com.github.spotbugs.snom.SpotBugsTask) {
 task pmd(type: Pmd) {
     group = 'verification'
 
-    source = fileTree('src/main/java') + fileTree('src/objectServer/java')
+    source = fileTree('src/main/java')
     ruleSetFiles = files("${projectDir}/../config/pmd/ruleset.xml")
 
     ruleSets = []
@@ -324,7 +287,7 @@ task checkstyle(type: Checkstyle) {
     group = 'verification'
     configFile file("${projectDir}/../config/checkstyle/checkstyle.xml")
 
-    source fileTree('src/main/java') + fileTree('src/objectServer/java')
+    source fileTree('src/main/java')
     include '**/*.java'
     exclude '**/gen/**'
 
@@ -341,33 +304,18 @@ apply from: "${rootDir}/../mavencentral-publications.gradle"
 
 publishing {
     publications {
-        basePublication(MavenPublication) {
-            groupId 'io.realm'
-            artifactId 'realm-android-library'
+        localPublication(MavenPublication) {
+            groupId 'io.realm.local'
+            artifactId 'realm-android-library-local'
             version project.version
-            artifact file("${rootDir}/realm-library/build/outputs/aar/realm-android-library-base-release.aar")
+            artifact file("${rootDir}/realm-library/build/outputs/aar/realm-android-library-release.aar")
             artifact sourcesJar
             artifact javadocJar
             populatePom(
                     it,
-                    'realm-android-library',
-                    'Realm is a mobile database: Build better apps, faster.',
-                    createPomDependencies(["baseImplementation", "implementation", "baseApi", "api"])
-            )
-        }
-
-        objectServerPublication(MavenPublication) {
-            groupId 'io.realm'
-            artifactId 'realm-android-library-object-server'
-            version project.version
-            artifact file("${rootDir}/realm-library/build/outputs/aar/realm-android-library-objectServer-release.aar")
-            artifact sourcesJar
-            artifact javadocJar
-            populatePom(
-                    it,
-                    'realm-android-library-object-server',
-                    'Realm is a mobile database: Build better apps, faster.',
-                    createPomDependencies(["objectServerImplementation", "implementation", "objectServerApi", "api"])
+                    'realm-android-library-local',
+                    'Realm Local: A mobile database for Android (local-only, no sync).',
+                    createPomDependencies(["implementation", "api"])
             )
         }
     }
@@ -429,7 +377,7 @@ project.afterEvaluate {
         }
 
         // Set javaDoc task's classpath with the project compiled classes and its dependencies
-        if(variant.name == "objectServerRelease") {
+        if(variant.name == "release") {
             def javaCompile = variant.javaCompileProvider.get()
             javadoc.classpath += files(
                     javaCompile.destinationDir, // All intermediate Realm compiled classes

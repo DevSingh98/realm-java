@@ -1,8 +1,8 @@
-> [!WARNING]
-> We announced the deprecation of Atlas Device Sync + Realm SDKs in September 2024. For more information please see:
-> - [SDK Deprecation](https://www.mongodb.com/docs/atlas/device-sdks/deprecation/)
-> - [Device Sync Deprecation](https://www.mongodb.com/docs/atlas/app-services/sync/device-sync-deprecation/)
->
+# Realm Java Local
+
+> [!NOTE]
+> This is a community-maintained fork of Realm Java focused on local database functionality only.
+> All deprecated sync features have been removed to create a lightweight, local-only database solution.
 
 > This repo will strip out all of the deprecated features and keep it open-source
 
@@ -14,71 +14,103 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.realm/realm-gradle-plugin?colorB=4dc427&label=Maven%20Central)](https://search.maven.org/artifact/io.realm/realm-gradle-plugin)
 [![License](https://img.shields.io/badge/License-Apache-blue.svg)](https://github.com/realm/realm-java/blob/master/LICENSE)
 
-Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This repository holds the source code for the Java version of Realm, which currently runs only on Android.
-
-## Realm Kotlin
-
-The [Realm Kotlin SDK](https://github.com/realm/realm-kotlin) is now GA and can be used for both Android and Kotlin Multiplatform. While we are still adding features, please consider using Realm Kotlin for any new project, and let us know if you miss anything there!
+Realm Java Local is a mobile database that runs directly inside Android devices.
+This repository contains a streamlined version of Realm Java with all sync functionality removed, focusing purely on local database operations.
 
 ## Features
 
-* **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets, and wearables.
-* **Simple:** Data is directly exposed as objects and queryable by code, removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to very few classes](https://www.mongodb.com/docs/atlas/device-sdks/sdk/java/): most of our users pick it up intuitively, getting simple apps up & running in minutes.
-* **Modern:** Realm supports easy thread-safety, relationships & encryption.
-* **Fast:** Realm is faster than even raw SQLite on common operations while maintaining an extremely rich feature set.
-* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
+* **Mobile-first:** Built from the ground up to run directly inside Android devices
+* **Simple:** Data is directly exposed as objects and queryable by code, removing the need for ORMs
+* **Modern:** Supports easy thread-safety, relationships & encryption
+* **Fast:** Faster than raw SQLite on common operations
+* **Local-only:** No sync dependencies, perfect for offline-first applications
 
 ## Getting Started
 
-Please see the [Quick Start](docs/guides/quick-start-local.md) to add Realm to your project.
+### Installation
 
-## Documentation
+Add Realm Java Local to your Android project:
 
-Documentation for Realm can be found in the [docs/](docs/README.md) directory.
+```gradle
+dependencies {
+    implementation 'io.realm.local:realm-android-library-local:11.0.0-local'
+    kapt 'io.realm:realm-annotations-processor:11.0.0-local'
+}
+```
 
-The Javadoc and Kotlin Extensions API Reference docs can be generated
-from source.
+Apply the Realm plugin:
+
+```gradle
+apply plugin: 'realm-android'
+```
+
+### Basic Usage
+
+```java
+// Define your model
+public class User extends RealmObject {
+    private String name;
+    private int age;
+    // getters and setters
+}
+
+// Use Realm
+Realm realm = Realm.getDefaultInstance();
+realm.beginTransaction();
+User user = realm.createObject(User.class);
+user.setName("John Doe");
+user.setAge(30);
+realm.commitTransaction();
+
+// Query data
+RealmResults<User> users = realm.where(User.class)
+    .greaterThan("age", 18)
+    .findAll();
+```
+
+## What's Included
+
+All core local database features:
+
+- **Local Database**: Full CRUD operations
+- **Queries**: Complex queries with sorting and filtering
+- **Relationships**: One-to-one, one-to-many, many-to-many
+- **Collections**: RealmList, RealmSet, RealmMap
+- **Encryption**: AES-256 encryption support
+- **Threading**: Thread-safe operations
+- **Migrations**: Schema migration support
+- **RxJava**: Reactive programming support
+- **Kotlin Coroutines**: Async/await support
+- **JSON Import/Export**: Data serialization
+
+## What's Removed
+
+All deprecated sync functionality has been removed:
+
+- **Device Sync**: All Atlas Device Sync features
+- **MongoDB Integration**: App Services, Functions, Authentication
+- **Real-time Sync**: Multi-device synchronization
+- **Cloud Features**: All cloud-dependent functionality
 
 ## Getting Help
 
-- **Got a question?**: Look for previous questions on the [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](http://stackoverflow.com/questions/ask?tags=realm). We actively monitor & answer questions on StackOverflow! You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
-- **Think you found a bug?** [Open an issue](https://github.com/realm/realm-java/issues/new?template=bug_report.md). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
-- **Have a feature request?** [Open an issue](https://github.com/realm/realm-java/issues/new?template=feature_request.md). Tell us what the feature should do, and why you want the feature.
+- **Got a question?**: Check the examples in the `examples/` directory
+- **Think you found a bug?** Open an issue in this repository
+- **Have a feature request?** Open an issue describing the local database feature you'd like
 
-## Using Snapshots
+> **Note**: This is a community-maintained fork. For questions about the original Realm Java with sync features, please refer to the [official Realm documentation](https://www.mongodb.com/docs/atlas/device-sdks/sdk/java/).
 
-If you want to test recent bugfixes or features that have not been packaged in an official release yet, you can use a **-SNAPSHOT** release of the current development version of Realm via Gradle, available on [Sonatype OSS](https://oss.sonatype.org/#nexus-search;quick~realm-gradle-plugin)
+## Building from Source
 
+To build Realm Java Local:
 
-```
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-        maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots/'
-        }
-        jcenter()
-    }
-    dependencies {
-        classpath "io.realm:realm-gradle-plugin:<version>-SNAPSHOT"
-    }
-}
-
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
-        maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots/'
-        }
-        jcenter()
-    }
-}
+```bash
+git clone https://github.com/your-username/realm-java-local.git
+cd realm-java-local
+./build-local.sh
 ```
 
-See [version.txt](version.txt) for the latest version number.
+This builds and installs the library to your local Maven repository.
 
 ## Building Realm
 
@@ -295,15 +327,18 @@ style/lint in the drop-down to the left of the Manage... button.
 
 ## License
 
-Realm Java is published under the Apache 2.0 license.
+Realm Java Local is published under the Apache 2.0 license.
 
-Realm Core is also published under the Apache 2.0 license and is available
-[here](https://github.com/realm/realm-core).
+## Contributing
 
-## Feedback
+This is a community-maintained project focused on local database functionality. Contributions welcome for:
 
-**_If you use Realm and are happy with it, all we ask is that you, please consider sending out a tweet mentioning [@realm](http://twitter.com/realm) to share your thoughts!_**
+- Bug fixes and performance improvements
+- Local database feature enhancements
+- Documentation improvements
 
-**_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
+**Note**: We do not accept sync-related contributions as this project is specifically local-only.
 
-<img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-java#README.md">
+## Acknowledgments
+
+Based on the original Realm Java by MongoDB. Thanks to the Realm team for creating an excellent local database foundation.

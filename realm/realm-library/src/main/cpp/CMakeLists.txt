@@ -70,13 +70,8 @@ if(NDK_LCACHE)
     set(CMAKE_CXX_CREATE_SHARED_LIBRARY "${NDK_LCACHE} ${CMAKE_CXX_CREATE_SHARED_LIBRARY}")
 endif()
 
-# Set option flags for Core.
-# See https://github.com/realm/realm-core/blob/master/CMakeLists.txt#L174 for the full list.
-if (REALM_FLAVOR STREQUAL base)
-    set(REALM_ENABLE_SYNC OFF)
-else()
-    set(REALM_ENABLE_SYNC ON)
-endif()
+# Set option flags for Core - sync disabled for local-only build
+set(REALM_ENABLE_SYNC OFF)
 
 # Format strings used to represent build parameters: Variant and Type
 string(TOLOWER ${CMAKE_BUILD_TYPE} build_type_FOLDER)
@@ -182,34 +177,32 @@ file(GLOB jni_SRC
     "jni_util/*.cpp"
     "jni_impl/android_logger.cpp"
 )
-# Those source file are only needed for sync.
-if (NOT REALM_ENABLE_SYNC)
-    list(REMOVE_ITEM jni_SRC
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_User.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_FunctionsImpl.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_EmailPasswordAuthImpl.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_ApiKeyAuthImpl.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_sync_ClientResetRequiredError.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_sync_Sync.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_sync_SyncSession.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsApp.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsAsyncOpenTask.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsAppCredentials.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsJavaNetworkTransport.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMongoClient.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMongoCollection.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsWatchStream.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMongoDatabase.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMutableSubscriptionSet.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsSubscription.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsSubscriptionSet.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsPush.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsSyncUser.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_mongo_iterable_AggregateIterable.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_mongo_iterable_FindIterable.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/jni_util/bson_util.cpp
-    )
-endif()
+# Remove sync-related JNI source files (sync disabled)
+list(REMOVE_ITEM jni_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_User.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_FunctionsImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_EmailPasswordAuthImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_ApiKeyAuthImpl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_sync_ClientResetRequiredError.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_sync_Sync.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_sync_SyncSession.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsApp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsAsyncOpenTask.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsAppCredentials.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsJavaNetworkTransport.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMongoClient.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMongoCollection.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsWatchStream.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMongoDatabase.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsMutableSubscriptionSet.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsSubscription.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsSubscriptionSet.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsPush.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_internal_objectstore_OsSyncUser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_mongo_iterable_AggregateIterable.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/io_realm_mongodb_mongo_iterable_FindIterable.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/jni_util/bson_util.cpp
+)
 
 add_library(realm-jni SHARED ${jni_SRC})
 target_link_libraries(realm-jni log android Realm::ObjectStore)
