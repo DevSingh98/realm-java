@@ -11,7 +11,7 @@ include 'moduleExample:library'
 include 'rxJavaExample'
 include 'threadExample'
 include 'unitTestExample'
-include 'mongoDbRealmExample'
+
 include 'multiprocessExample'
 include 'compatibilityExample'
 include ':coroutinesExample'
